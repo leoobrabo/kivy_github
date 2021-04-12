@@ -10,6 +10,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import certifi
 import os
+from kivy.network.urlrequest import UrlRequest
 
 # Here's all the magic !
 os.environ['SSL_CERT_FILE'] = certifi.where()
@@ -66,49 +67,49 @@ MDBoxLayout:
         pos_hint: {"x": .04, "center_y": .88}
         source: ""
     MDRectangleFlatIconButton:
-        size_hint_x: .43
+        size_hint_x: .35
         size_hint_y: .09
         text: 'Nome'
         icon: "nature-people"
         user_font_size: '10sp'
         pos_hint: {"x": .1, "center_y": .7}      
     MDRectangleFlatIconButton:
-        size_hint_x: .43
+        size_hint_x: .35
         size_hint_y: .09
         text: 'Compania'
         icon: "domain"
         user_font_size: '10sp'
         pos_hint: {"x": .1, "center_y": .6}
     MDRectangleFlatIconButton:
-        size_hint_x: .43
+        size_hint_x: .35
         size_hint_y: .09
         text: 'Localização'
         icon: "home-group"
         user_font_size: '10sp'
         pos_hint: {"x": .1, "center_y": .5}    
     MDRectangleFlatIconButton:
-        size_hint_x: .43
+        size_hint_x: .35
         size_hint_y: .09
         text: 'Repositorios'
         icon: "source-repository"
         user_font_size: '10sp'
         pos_hint: {"x": .1, "center_y": .4}    
     MDRectangleFlatIconButton:
-        size_hint_x: .43
+        size_hint_x: .35
         size_hint_y: .09
         text: 'Gists'
         icon: "book"
         user_font_size: '10sp'
         pos_hint: {"x": .1, "center_y": .3}
     MDRectangleFlatIconButton:
-        size_hint_x: .43
+        size_hint_x: .35
         size_hint_y: .09
         text: 'Seguidores'
         icon: "account-group-outline"
         user_font_size: '10sp'
         pos_hint: {"x": .1, "center_y": .2}
     MDRectangleFlatIconButton:
-        size_hint_x: .43
+        size_hint_x: .35
         size_hint_y: .09
         text: 'Seguindo'
         icon: "account-multiple-plus"
@@ -121,7 +122,7 @@ MDBoxLayout:
         text: ''
         icon: "github"
         user_font_size: '10sp'
-        pos_hint: {"x": .65, "center_y": .7}     
+        pos_hint: {"x": .55, "center_y": .7}     
     MDLabel:
         id: compania
         size_hint_x: .43
@@ -129,7 +130,7 @@ MDBoxLayout:
         text: ''
         icon: "github"
         user_font_size: '10sp'
-        pos_hint: {"x": .65, "center_y": .6}    
+        pos_hint: {"x": .55, "center_y": .6}    
     MDLabel:
         id: localizacao
         size_hint_x: .43
@@ -137,7 +138,7 @@ MDBoxLayout:
         text: ''
         icon: "github"
         user_font_size: '10sp'
-        pos_hint: {"x": .65, "center_y": .5}   
+        pos_hint: {"x": .55, "center_y": .5}   
     MDLabel:
         id: repositorios
         size_hint_x: .43
@@ -145,7 +146,7 @@ MDBoxLayout:
         text: ''
         icon: "github"
         user_font_size: '10sp'
-        pos_hint: {"x": .65, "center_y": .4}     
+        pos_hint: {"x": .55, "center_y": .4}     
     MDLabel:
         id: gists
         size_hint_x: .43
@@ -153,7 +154,7 @@ MDBoxLayout:
         text: ''
         icon: "github"
         user_font_size: '10sp'
-        pos_hint: {"x": .65, "center_y": .3}    
+        pos_hint: {"x": .55, "center_y": .3}    
     MDLabel:
         id: seguidores
         size_hint_x: .43
@@ -161,7 +162,7 @@ MDBoxLayout:
         text: ''
         icon: "github"
         user_font_size: '10sp'
-        pos_hint: {"x": .65, "center_y": .2}   
+        pos_hint: {"x": .55, "center_y": .2}   
     MDLabel:
         id: seguindo
         size_hint_x: .43
@@ -169,7 +170,7 @@ MDBoxLayout:
         text: ''
         icon: "github"
         user_font_size: '10sp'
-        pos_hint: {"x": .65, "center_y": .1}  
+        pos_hint: {"x": .55, "center_y": .1}  
 '''
 
 
@@ -177,7 +178,8 @@ class InicialScreen(MDScreen):
 
     def req_git(self, *args):
         print('aqui1')
-        global usuario, name
+        global usuario
+        global name
         global repos
         global avatar
         global compania
@@ -188,41 +190,28 @@ class InicialScreen(MDScreen):
         global seguidores
         usuario = self.ids.usuario.text
         print(usuario)
-        session = requests.Session()
-        retry = Retry(connect=3, backoff_factor=0.5)
-        adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-        try:
-            res = session.get(f'https://api.github.com/users/{usuario}').json()
-            name = res['name']
-            repos = res['public_repos']
-            avatar = res["avatar_url"]
-            compania = res["company"]
-            localizacao = res["location"]
-            bio = res["bio"]
-            gists = res["public_gists"]
-            seguidores = res["followers"]
-            seguindo = res["following"]
-            print(res["created_at"])
-            print(res["updated_at"])
-        except requests.ConnectionError as e:
-            print("OOPS!! Connection Error. Make sure you are connected to Internet. Technical Details given below.\n")
-            print(str(e))
-            renewIPadress()
 
-        except requests.Timeout as e:
-            print("OOPS!! Timeout Error")
-            print(str(e))
-            renewIPadress()
+        search_url = f"https://api.github.com/users/{usuario}"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        self.request = UrlRequest(search_url, req_headers=headers)
+        self.request.wait()
+        print(self.request)
+        print(self.request.result)
+        name = self.request.result['name']
+        login = self.request.result['login']
+        avatar = self.request.result['avatar_url']
+        link = self.request.result['html_url']
+        repos = self.request.result['public_repos']
+        compania = self.request.result['company']
+        localizacao = self.request.result['location']
+        bio = self.request.result['bio']
+        gists = self.request.result['public_gists']
+        seguidores = self.request.result['followers']
+        seguindo = self.request.result['following']
 
-        except requests.RequestException as e:
-            print("OOPS!! General Error")
-            print(str(e))
-            renewIPadress()
-
-        except KeyboardInterrupt:
-            print("Someone closed the program")
+        # print(res["created_at"])
+        # print(res["updated_at"])
 
 
 class ProfileScreen(MDScreen):
