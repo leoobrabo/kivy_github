@@ -22,6 +22,7 @@ MDBoxLayout:
     orientation: "vertical"
     MDToolbar:
         title: "Dados Github"
+        right_action_items: [['lightbulb-outline', lambda x: app.color()]]
         elevation: 8
     ScreenManager:
         InicialScreen:
@@ -241,8 +242,15 @@ class GitHub(MDApp):
     def build(self):
         self.theme_cls.primary_palette = 'DeepPurple'
         self.theme_cls.accent_palette = 'Blue'
-        self.theme_cls.theme_style = 'Dark'
+        self.theme_cls.theme_style = 'Light'
         return Builder.load_string(screen_helper)
+
+    def color(self):
+        style = self.theme_cls.theme_style
+        if style == 'Light':
+            self.theme_cls.theme_style = 'Dark'
+        else:
+            self.theme_cls.theme_style = 'Light'
 
 
 if __name__ == '__main__':
