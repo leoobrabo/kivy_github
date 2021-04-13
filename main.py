@@ -1,19 +1,10 @@
-from kivy.lang.builder import Builder
 from kivy.app import App
+#from kivy.core.window import Window
 from kivy.lang import Builder
-from kivymd.app import MDApp
-from kivy.uix.screenmanager import ScreenManager
-from kivy.core.window import Window
-from kivymd.uix.screen import MDScreen
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
-import certifi
-import os
 from kivy.network.urlrequest import UrlRequest
-
-# Here's all the magic !
-os.environ['SSL_CERT_FILE'] = certifi.where()
+from kivy.uix.screenmanager import ScreenManager
+from kivymd.app import MDApp
+from kivymd.uix.screen import MDScreen
 
 #Window.size = (300, 500)
 
@@ -22,6 +13,7 @@ MDBoxLayout:
     orientation: "vertical"
     MDToolbar:
         title: "Dados Github"
+
         right_action_items: [['lightbulb-outline', lambda x: app.color()]]
         elevation: 8
     ScreenManager:
@@ -53,13 +45,15 @@ MDBoxLayout:
     MDRectangleFlatIconButton:
         icon: "account-search"
         text: "Buscar"
+        font_size: "18sp"
         pos_hint: {"center_x": .5, "center_y": .25}
-        on_release:  root.manager.current = 'profile'
+        #on_release:  root.manager.current = 'profile'
         on_press: root.req_git()   
         
 <ProfileScreen>:
     on_enter: root.dados()
     name: 'profile'
+    
     Screen:
     AsyncImage:
         id: avatar
@@ -177,8 +171,15 @@ MDBoxLayout:
 
 class InicialScreen(MDScreen):
 
+    def on_release(self):
+        #print('mudando tela')
+        self.parent.current = 'profile'
+
+    def back(self):
+        self.manager = 'menu'
+
     def req_git(self, *args):
-        print('aqui1')
+        # print('aqui1')
         global usuario
         global name
         global repos
@@ -189,27 +190,34 @@ class InicialScreen(MDScreen):
         global gists
         global seguindo
         global seguidores
-        usuario = self.ids.usuario.text
-        print(usuario)
 
-        search_url = f"https://api.github.com/users/{usuario}"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-        self.request = UrlRequest(search_url, req_headers=headers)
-        self.request.wait()
-        print(self.request)
-        print(self.request.result)
-        name = self.request.result['name']
-        login = self.request.result['login']
-        avatar = self.request.result['avatar_url']
-        link = self.request.result['html_url']
-        repos = self.request.result['public_repos']
-        compania = self.request.result['company']
-        localizacao = self.request.result['location']
-        bio = self.request.result['bio']
-        gists = self.request.result['public_gists']
-        seguidores = self.request.result['followers']
-        seguindo = self.request.result['following']
+        usuario = self.ids.usuario.text
+
+        if usuario == '':
+            #print('Digite um valor valido')
+            self.back()
+
+        else:
+            # print(usuario)
+            search_url = f"https://api.github.com/users/{usuario}"
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+            self.request = UrlRequest(search_url, req_headers=headers)
+            self.request.wait()
+            # print(self.request)
+            # print(self.request.result)
+            name = self.request.result['name']
+            login = self.request.result['login']
+            avatar = self.request.result['avatar_url']
+            link = self.request.result['html_url']
+            repos = self.request.result['public_repos']
+            compania = self.request.result['company']
+            localizacao = self.request.result['location']
+            bio = self.request.result['bio']
+            gists = self.request.result['public_gists']
+            seguidores = self.request.result['followers']
+            seguindo = self.request.result['following']
+            self.on_release()
 
         # print(res["created_at"])
         # print(res["updated_at"])
@@ -218,8 +226,8 @@ class InicialScreen(MDScreen):
 class ProfileScreen(MDScreen):
 
     def dados(self, *args):
-        print('aqui2')
-        print(self.name)
+        # print('aqui2')
+        # print(self.name)
         self.ids.nome.text = str(name)
         self.ids.compania.text = str(compania)
         self.ids.localizacao.text = str(localizacao)
