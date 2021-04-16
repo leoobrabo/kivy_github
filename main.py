@@ -5,17 +5,14 @@ from kivy.network.urlrequest import UrlRequest
 from kivy.uix.screenmanager import ScreenManager
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.button import MDFlatButton
 
 #Window.size = (300, 500)
 
 screen_helper = '''                 
 MDBoxLayout:
     orientation: "vertical"
-    MDToolbar:
-        title: "Dados Github"
-
-        right_action_items: [['lightbulb-outline', lambda x: app.color()]]
-        elevation: 8
     ScreenManager:
         InicialScreen:
         ProfileScreen:
@@ -23,6 +20,11 @@ MDBoxLayout:
 <InicialScreen>:
     name: 'inicial'
     Screen:
+    MDToolbar:
+        title: "Dados Github1"
+        type: "top"
+        right_action_items: [['lightbulb-outline', lambda x: app.color()]]
+        elevation: 8
     MDIconButton:
         icon: "git"
         user_font_size: '70sp'
@@ -53,6 +55,11 @@ MDBoxLayout:
 <ProfileScreen>:
     on_enter: root.dados()
     name: 'profile'
+    MDToolbar:
+        title: "Dados Github2"
+
+        left_action_items: [['lightbulb-outline', lambda x: app.color()]]
+        elevation: 8
     
     Screen:
     AsyncImage:
@@ -170,6 +177,24 @@ MDBoxLayout:
 
 
 class InicialScreen(MDScreen):
+    dialog = None
+
+    def show_alert_dialog(self):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                text="Digite um usuario!",
+                buttons=[
+                    MDFlatButton(
+                        # text_color=self.theme_cls.primary_color
+                        text="Tentar Novamente", on_release=self.close_dialog
+                    ),
+
+                ],
+            )
+        self.dialog.open()
+
+    def close_dialog(self, obj):
+        self.dialog.dismiss()
 
     def on_release(self):
         #print('mudando tela')
@@ -195,7 +220,7 @@ class InicialScreen(MDScreen):
 
         if usuario == '':
             #print('Digite um valor valido')
-            self.back()
+            self.show_alert_dialog()
 
         else:
             # print(usuario)
